@@ -24,18 +24,20 @@ def CreateModel(layers, learning_rate):
 	model.compile(loss="mse", optimizer=keras.optimizers.Adam(lr=learning_rate), metrics=["accuracy"]);
 	return model;
 
-modelName = input("Model name -> ");
-layers = json.loads(input("Neurons in hidden layers as list (e.g. [6, 3, 3]) -> "));
-lr = float(input("Learning rate -> "));
+if __name__ == "__main__":
+	model_name = input("Model name -> ");
+	layers = json.loads(input("Neurons in hidden layers as list (e.g. [6, 3, 3]) -> "));
+	lr = float(input("Learning rate -> "));
 
-model = CreateModel(layers, lr);
-if not model: raise Exception("Invalid model, did you use correct param format?");
+	model = CreateModel(layers, lr);
+	if not model: raise Exception("Invalid model, did you use correct param format?");
 
-dirName = "models/" + modelName + "/";
-import os;
-if not os.path.exists(dirName):
-	os.makedirs(dirName);
+	model_dir = "models/" + model_name + "/";
+	import os;
+	if not os.path.exists(model_dir):
+		os.makedirs(model_dir);
 
-model.summary();
-keras.utils.plot_model(model, show_shapes=True, to_file=dirName + "model.png");
-model.save(dirName + "model.h5");
+	model.save(model_dir + "model.h5");
+	keras.utils.plot_model(model, show_shapes=True, to_file=model_dir + "model.png");
+	
+	model.summary();

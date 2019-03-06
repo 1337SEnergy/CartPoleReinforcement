@@ -1,23 +1,24 @@
-import keras, random;
+import keras, random, json;
 import numpy as np;
 
 class CartPoleAgent(object):
-	def __init__(self, action_size, model=None, epsilon=1.0):
-		self.action_size = action_size;
+	def __init__(self, action_space, model=None, epsilon=1.0):
+		self.action_space = action_space;
+		self.location = None;
 		self.model = model;
 		self.memory = [];
 		
-		self.gamma = 0.95; # long term value
+		self.gamma = 1.0; # long term value
 		self.epsilon = epsilon; # how random are our choices?
-		self.epsilon_min = 0.01;
-		self.epsilon_decay = 0.995;
+		self.epsilon_min = 0.05;
+		self.epsilon_decay = 0.997;
 
 	def remember(self, state, action, reward, next_state, done):
 		self.memory.append((state, action, reward, next_state, done));
 		
 	def act(self, state):
 		if random.random() <= self.epsilon:
-			return random.randrange(self.action_size);
+			return self.action_space.sample();
 	
 		act_values = self.model.predict(state);
 		return np.argmax(act_values[0]);
@@ -38,26 +39,36 @@ class CartPoleAgent(object):
 						  np.amax(self.model.predict(next_state)[0]));
 			
 			# get current output value and update the value for the action
-			target_f = self.model.predict(state);
-			target_f[0][action] = target;
+			target_f = self.model.predict(state)[0];
+			target_f[action] = target;
 			
 			xtrain.append(state[0]);
-			ytrain.append(target_f[0]);
+			ytrain.append(target_f);
 		
-		if len(xtrain) > 0 and len(ytrain) > 0:
+		if len(xtrain) > 0 and len(xtrain) == len(ytrain):
 			xtrain = np.array(xtrain, dtype=np.float32);
 			ytrain = np.array(ytrain, dtype=np.float32);
 			self.model.fit(xtrain, ytrain, epochs=1, batch_size=batch_size, verbose=0);
 		
 		# update epsilon to minimize exploration on the long term
 		if self.epsilon > self.epsilon_min:
-			self.epsilon *= self.epsilon_decay
+			self.epsilon *= self.epsilon_decay;
 	
-	def load(self, modelLocation, epsilon=1.0):
-		self.model = keras.models.load_model(modelLocation);
+	def load(self, model_location, epsilon=1.0):
+		self.model = keras.models.load_model(model_location);
+		self.location = model_location;
 		
-		self.epsilon = max(epsilon, self.epsilon_min);
+		self.epsilon = max(epsilon, 0.0);
 		self.epsilon = min(self.epsilon, 1.0);
 	
-	def save(self, modelLocation):
-		if self.model: self.model.save(modelLocation);
+	def save(self, model_location=None):
+		try:
+			location = self.location.replace(".h5", "_trained.h5") if not model_location else model_location + "model_trained.h5";
+			
+			self.model.save(location);
+		
+			# with open(location.replace(".h5", ".json"), "w+") as f:
+				# json.dump([list(x) for x in self.memory], f);
+			
+		except Exception as e:
+			print("Exception", str(e));
