@@ -3,7 +3,7 @@ import numpy as np;
 import keras, gym, agent;
 
 def mean(values):
-	return round(sum(values) / len(values), 2);
+	return round(sum(values) / len(values), 2) if type(values) == list and len(values) > 0 else 0.0;
 
 if __name__ == "__main__":
 	env = gym.make("CartPole-v1");
@@ -20,6 +20,7 @@ if __name__ == "__main__":
 	episode_count = int(input("Episode count -> "));
 	done = False;
 	
+	max_score = None;
 	highest_score = 0;
 	scores = [];
 	
@@ -31,8 +32,9 @@ if __name__ == "__main__":
 		state = env.reset();
 		state = np.reshape(state, [1, state_size]);
 		score = 0;
+		done = False;
 		
-		while not done:
+		while not done and (score < max_score if max_score else True):
 			# show game graphics
 			env.render();
 
@@ -43,7 +45,6 @@ if __name__ == "__main__":
 			
 			score += 1;
 		
-		done = False;
 		scores.append(score);
 		if len(scores) > 100: scores = scores[-100:];
 		

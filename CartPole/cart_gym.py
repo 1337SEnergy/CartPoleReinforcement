@@ -3,10 +3,10 @@ import numpy as np;
 import keras, gym, agent;
 
 def sign(value):
-	return round(val/abs(value)) if value != 0 else 0;
+	return round(value/abs(value)) if value != 0 else 0;
 
 def mean(values):
-	return round(sum(values) / len(values), 2) if type(values) == list else 0.0;
+	return round(sum(values) / len(values), 2) if type(values) == list and len(values) > 0 else 0.0;
 
 if __name__ == "__main__":
 	env = gym.make("CartPole-v1");
@@ -15,7 +15,7 @@ if __name__ == "__main__":
 	
 	model_name = input("Model name -> ");
 	load_trained = input("Load trained (y/n)? ");
-	load_trained = True if load_trained.lower() == "y" else False;
+	load_trained = load_trained.lower() == "y";
 	
 	my_model_location = "models/" + model_name + "/";
 	my_model_trained = my_model_location + "model_trained.h5";
@@ -25,16 +25,17 @@ if __name__ == "__main__":
 	
 	print("Loading", my_model, "with epsilon", epsilon);
 	agent.load(my_model, float(epsilon));
-	try: agent.memory = json.load(my_model.replace(".h5", ".json"));
+	try: agent.memory = json.load(my_model_trained.replace(".h5", ".json"));
 	except: agent.memory = [];
 
 	episode_count = int(input("Episode count -> "));
-	batch_size = 64;
-	max_memory = 30000;
+	batch_size = 16;
+	max_memory = 10000;
 	
 	max_score = None;
 	highest_score = 0;
 	scores = [];
+	rewards = [];
 	
 	start = time.time();
 	first_start = start;
@@ -45,6 +46,7 @@ if __name__ == "__main__":
 		state = np.reshape(state, [1, state_size]);
 		score = 0;
 		done = False;
+		rewards.append(0.0);
 		
 		while not done and (score < max_score if max_score else True):
 			# show game graphics
@@ -68,6 +70,7 @@ if __name__ == "__main__":
 			# save experience and update current state
 			agent.remember(state, action, reward, next_state, done);
 			state = next_state;
+			rewards[-1] += reward;
 			
 			# dynamic batch_size and max_memory
 			# batch_size = round((highest_score/500) * 80) + 48;
@@ -78,9 +81,10 @@ if __name__ == "__main__":
 		
 		scores.append(score);
 		if len(scores) > 100: scores = scores[-100:];
+		if len(rewards) > 100: rewards = rewards[-100:];
 		
-		print("episode: {}/{}, score: {}, e: {:.2}, in memory: {}, highest score: {}, batch size: {}, last 100 average: {}"
-				.format(e+1, episode_count, score, agent.epsilon, len(agent.memory), highest_score, batch_size, mean(scores)));
+		print("episode: {}/{}, score: {}, e: {:.2}, in memory: {}, last 100 average: {}"
+				.format(e+1, episode_count, score, agent.epsilon, len(agent.memory), mean(rewards)));
 		
 		if score >= highest_score:
 			agent.save();
