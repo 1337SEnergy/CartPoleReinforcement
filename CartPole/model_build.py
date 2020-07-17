@@ -20,7 +20,7 @@ def CreateModel(layers, learning_rate):
 			# model.add(keras.layers.LeakyReLU(alpha=0.3));
 		
 		model.add(keras.layers.Dense(2, activation="linear"));
-		
+	
 	model.compile(loss="mse", optimizer=keras.optimizers.Adam(lr=learning_rate), metrics=["accuracy"]);
 	return model;
 

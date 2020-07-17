@@ -5,7 +5,7 @@ This project contains several scripts used to build, train and showcase a (deep)
 All trained and untrained models are stored in the *models* directory by default. The name of the model is specified by the name of the subdirectory, which contains H5 files of untrained and trained model, and it's structure as an image.
 
 ## Model Builder
-Included is also an easy to modify script *buildModel.py*, which builds a model with user-specified hidden layers, and a custom learning rate (feel free to change the parameters in, and passed to the builder).
+Included is also an easy to modify model builder. Feel free to tweak network hyperparameters.
 
 ## Agent
 CartPoleAgent is a simple class that can load or save a specific model, decide upon the action, and remember and replay steps in the environment.

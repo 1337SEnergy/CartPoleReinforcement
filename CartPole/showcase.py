@@ -8,14 +8,13 @@ def mean(values):
 if __name__ == "__main__":
 	env = gym.make("CartPole-v1");
 	state_size = env.observation_space.shape[0];
-	agent = agent.CartPoleAgent(env.action_space);
 	
 	model_name = input("Model name -> ");
 	my_model = "models/" + model_name + "/model_trained.h5";
 	epsilon = input("Epsilon -> ");
 	
 	print("Loading", my_model, "with epsilon", epsilon);
-	agent.load(my_model, float(epsilon));
+	agent = agent.DQNAgent(my_model, float(epsilon));
 
 	episode_count = int(input("Episode count -> "));
 	done = False;
